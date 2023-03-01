@@ -1,0 +1,16 @@
+# JetBrains
+.idea
+
+# Prva uloha
+prva_uloha/.idea
+prva_uloha/out
+# Latex
+*.aux
+*.lof
+*.log
+*.fls
+*.fdb_latexmk
+*.toc
+*.out
+*.lot
+

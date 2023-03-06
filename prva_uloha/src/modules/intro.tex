@@ -2,8 +2,8 @@
 
 \subsection{Názov projektu: Nemocnice}
 
-\large Zadanie
-Navrhněte IS malé nemocnice, který by měl poskytovat základní údaje o pacientech, lékařích, odděleních, vyšetřeních
+\noindent\textbf{Zadanie:} \\
+\indent Navrhněte IS malé nemocnice, který by měl poskytovat základní údaje o pacientech, lékařích, odděleních, vyšetřeních
 pacientů, podávaných lécích apod. Zaměřte se i na otázku ochrany dat tak, aby měl každý lékař přístup pouze k potřebným
 údajům.
 
@@ -14,14 +14,14 @@ Náš návrh pozostáva z aktérov:
     \1 Primár
     \2 Určuje zákroky a ich presuny, asistujúcich lekárov a sestry
     \1 Vedúci lekár
-    \2 Vedie oddelenie, môže určiť zákrok avšak musí byť schválený primárom
+    \2 Vedie oddelenie, môže určiť zákrok avšak musí byť schválený primárom jedine
     \1 Ambulantný lekár
     \2 Lekár v ambulancii, príjma pacientov, vyšetruje ich a podľa toho určuje hospitalizáciu
     \1 Doktor
     \2 Viď popis nižšie
     \1 Zdravotná sestra
-    \2 Pravá ruka lekára :), asistuje lekárom avšak z hľadiska systému nemá takmer žiadne právomoci
-    \2 Vie zapísať pacienta no systému, zobraziť si lekárov na oddelení a zobraziť si údaje o liekoch
+    \2 Pravá ruka lekára :), asistuje lekárom, avšak z hľadiska systému nemá takmer žiadne právomoci
+    \2 Vie zapísať pacienta do systému, zobraziť si lekárov na oddelení a zobraziť si údaje o liekoch
 \end{outline}
 
 Doktor reprezentuje "bežných"  lekárov v nemocnici.
@@ -39,9 +39,8 @@ A to sú
 
 Aktéra všeobecného lekára sme v návrhu neuvažovali nakoľko sme mali navrhovať use\_case pre nemocnicu a všeobecný lekár
 sídli vždy mimo nemocnicu.
-
-
-Návrh use\_case grafu~\ref{fig:use_case}
+\\\\
+\textit{Návrh use\_case grafu}~\ref{fig:use_case}
 
 \subsection{Riešenie - er diagram}
 ER Diagram alebo aj entity relatonship diagram, vyjadruje dátový tok v rámci entít.
@@ -59,11 +58,11 @@ V našom prípade sme vychádzali z entít
     \item Zákrok
 \end{itemize}
 
-\large{Pričom} \\
-\indent Entita zdravotník reprezentuje akéhokoľvek zamestnanca v nemocnici. Pomocou atributu pracovný status rozlišujeme medzi staničnými setrami,
+\noindent\textbf{Pričom:} \\
+\indent Entita zdravotník reprezentuje akéhokoľvek zamestnanca v nemocnici. Pomocou atribútu pracovný status rozlišujeme medzi staničnými setrami,
 všobecnými lekármi, primármi a pod. \\
 Pomocou generalizácie ich ďalej delíme na sestry a doktorov. Pričom jediný rozdiel medzi sestrou a doktorom je atestácia, čož
-je vyjadrené pomocou generalizácie a atributu atestácia.
+je vyjadrené pomocou generalizácie a atribútu atestácia.
 
 Zdravotník pracuje na jednom oddelení v rámci ktorého smie vykonávať vyšetrenia a zákroky, a účastniť sa na hospitalizácii.
 Hoci hospitalizácia v preklade znamená "prijatie pacienta na lôžko", sú prípady kedy je prítomný doktor a či sestra. Čož
@@ -81,9 +80,8 @@ Na vyšetrení sa zúčastní pacient, spolu so setrami a doktormi, resp. zdravo
 Entita Liek na predpis je striktne viazaná na pacienta, preto má vlastnosť  typu slabá.
 
 Entita oddelenie rezprezentuje oddelenie a entita hospitalizácia reprezentuje príjem hospitalizovaného pacienta do nemocnice.
-
-
-Návrh er\_diagramu~\ref{fig:er_diagram}
+\\\\
+\textit{Návrh er\_diagramu}~\ref{fig:er_diagram}
 \newpage
 
 

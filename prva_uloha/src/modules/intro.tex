@@ -14,13 +14,13 @@ Náš návrh pozostáva z aktérov:
     \1 Primár
     \2 Určuje zákroky a ich presuny, asistujúcich lekárov a sestry
     \1 Vedúci lekár
-    \2 Vedie oddelenie, môže určiť zákrok avšak musí byť schválený primárom jedine
+    \2 Vedie oddelenie, môže určiť zákrok avšak musí byť schválený jedine primárom
     \1 Ambulantný lekár
     \2 Lekár v ambulancii, príjma pacientov, vyšetruje ich a podľa toho určuje hospitalizáciu
     \1 Doktor
     \2 Viď popis nižšie
     \1 Zdravotná sestra
-    \2 Pravá ruka lekára :), asistuje lekárom, avšak z hľadiska systému nemá takmer žiadne právomoci
+    \2 Pravá ruka lekára, asistuje lekárom, avšak z hľadiska systému nemá takmer žiadne právomoci
     \2 Vie zapísať pacienta do systému, zobraziť si lekárov na oddelení a zobraziť si údaje o liekoch
 \end{outline}
 
@@ -29,7 +29,7 @@ Aktéri lekárov disponujú rovnakými právomocami a v rámci systému rovnaký
 
 A to sú
 \begin{itemize}
-    \item Zpbraziť si pacienta
+    \item Zobraziť si pacienta
     \item Zapísať vyšetrenie
     \item Zobraziť vyšetrenie
     \item Zobraziť zákrok
@@ -72,10 +72,10 @@ Entita Doktor má možnoť predpisovať lieky.
 
 Entita pacient v našom prípade reprezentuje pacienta S zdravotnou knihou kde sa nachádzajú spisy o vštkých vyšetreniach a zákrokoch ktoré pacient
 absolvoval.
-Pacient sa hospitalizáciou začlenuje do systému pročom absolvuje v vyšetrenia, zákroky a sú mu predpísané lieky
+Pacient sa hospitalizáciou začlenuje do systému pročom absolvuje vyšetrenia, zákroky a sú mu predpísané lieky
 
 Entita Vyšetrenie obsahuje rovnaké údaje ako zákrok, čo je značené ďaľsou generalizáciou.
-Na vyšetrení sa zúčastní pacient, spolu so setrami a doktormi, resp. zdravotníkmi.
+Vyšetrení sa zúčastní pacient, spolu so setrami a doktormi, resp. zdravotníkmi.
 
 Entita Liek na predpis je striktne viazaná na pacienta, preto má vlastnosť  typu slabá.
 

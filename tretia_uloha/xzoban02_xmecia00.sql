@@ -23,8 +23,8 @@ CREATE TABLE T_Clinic
 CREATE TABLE T_Medic
 (
     Medic_ID    INTEGER NOT NULL PRIMARY KEY,
-    First_name  VARCHAR(20),    -- TODO
-    Last_name   VARCHAR(20),    --  Maybe rename ?
+    First_name  VARCHAR(20), -- TODO
+    Last_name   VARCHAR(20), --  Maybe rename ?
     Clinic_name VARCHAR(30),
     Duty        VARCHAR(20),
     Status      VARCHAR(20),
@@ -45,8 +45,8 @@ CREATE TABLE T_Nurse
 CREATE TABLE T_Patient
 (
     Personal_ID VARCHAR(10) NOT NULL PRIMARY KEY,
-    First_name  VARCHAR(20),                                -- TODO
-    Last_name   VARCHAR(20),                                --  We have problem calling name of patient and name of doctor, maybe rename ?
+    First_name  VARCHAR(20), -- TODO
+    Last_name   VARCHAR(20), --  We have problem calling name of patient and name of doctor, maybe rename ?
     CHECK ( (regexp_like(Personal_ID, '^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$')
         AND (MOD(CAST(Personal_ID AS INTEGER), 11) = 0))
         OR (regexp_like(Personal_ID, '^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$')
@@ -153,9 +153,9 @@ VALUES ('2', 'ambulantní');
 INSERT INTO T_Doctor
 VALUES ('3', 'Dětská neurologie');
 INSERT INTO T_Doctor
-VALUES ('6','');
+VALUES ('6', '');
 INSERT INTO T_Doctor
-VALUES ('7','');
+VALUES ('7', '');
 
 INSERT INTO T_Nurse
 VALUES ('4');
@@ -212,6 +212,12 @@ INSERT INTO T_Prescribed_Drug
 VALUES ('634', '2', '7062012562', '2022-08-13', '21:35', 'diazepam');
 INSERT INTO T_Prescribed_Drug
 VALUES ('991', '2', '7062012562', '2022-05-21', '11:22', 'diazepam');
+INSERT INTO T_Prescribed_Drug
+VALUES ('943', '1', '100328001', '2022-08-02', '14:33', 'penicilin');
+INSERT INTO T_Prescribed_Drug
+VALUES ('944', '6', '100328001', '2022-09-04', '18:06', 'penicilin');
+INSERT INTO T_Prescribed_Drug
+VALUES ('945', '7', '100328001', '2022-10-06', '10:15', 'tyrotricin');
 
 INSERT INTO T_Examination
 VALUES ('', '6', '9502146005', '2022-08-25', '12:24', '2431');
@@ -268,12 +274,56 @@ WHERE Clinic_name = 'Neurologie';
 DROP VIEW V_Operation_patient_details;
 
 CREATE VIEW V_Operation_patient_details AS
-SELECT Medic_ID, Surgery_ID, Surgery_date, Surgery_Time, First_name, Last_name
+SELECT T_Medic.Medic_ID,
+--        T_Medic.First_name,
+--        T_Medic.Last_name, TODO, fails because of duplicity
+       Surgery_ID,
+       Surgery_date,
+       Surgery_Time,
+       T_Patient.First_name,
+       T_Patient.Last_name
 FROM T_Surgery
-         NATURAL LEFT JOIN T_Medic
-         NATURAL LEFT JOIN T_Patient
-WHERE Personal_ID = '100328001';
+         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Surgery.Medic_ID
+         LEFT JOIN T_Patient ON T_Patient.Personal_ID = T_Surgery.Personal_ID
+WHERE T_Patient.Personal_ID = '100328001';
 
--- TODO, finish
---- Select queries using GROUP BY and
+
+--- Select queries using GROUP BY and aggregate functions
+
+--- Select querie using EXISTS
+-- We want to see names of all medicine prescribed by certain doctor
+
+DROP VIEW V_Prescribed_drugs;
+
+CREATE VIEW V_Prescribed_drugs AS
+SELECT T_Medic.First_Name, T_Medic.Last_Name, T_Prescribed_Drug.Prescription_date, T_Prescribed_Drug.Cure
+FROM T_Doctor
+         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
+         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
+WHERE EXISTS(
+        SELECT Cure
+        FROM T_Doctor
+                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
+    )
+  AND Cure IS NOT NULL;
+
+--- Select queries using IN
+-- Now we want to see only who prescribed diazepam or insulin
+
+DROP VIEW V_Prescribed_insulin_diazepam;
+
+CREATE VIEW V_Prescribed_insulin_diazepam AS
+SELECT T_Medic.First_Name, T_Medic.Last_Name, T_Prescribed_Drug.Prescription_date, T_Prescribed_Drug.Cure
+FROM T_Doctor
+         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
+         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
+WHERE EXISTS(
+        SELECT Cure
+        FROM T_Doctor
+                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
+    )
+  AND Cure IS NOT NULL
+  AND Cure IN ('diazepam', 'inzulin');
+
+
 COMMIT;

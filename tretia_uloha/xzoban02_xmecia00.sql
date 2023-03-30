@@ -290,7 +290,19 @@ WHERE T_Patient.Personal_ID = '100328001';
 
 --- Select queries using GROUP BY and aggregate functions
 
---- Select querie using EXISTS
+-- We want to see amount of medic stuff on Neurological clinic
+DROP VIEW V_Neurological_stuff;
+
+-- TODO Why not working ?
+CREATE VIEW V_Neurological_stuff AS
+SELECT COUNT(T_Medic.Medic_ID), T_Clinic.Clinic_name
+FROM T_Clinic
+         LEFT JOIN T_Medic ON T_Clinic.Clinic_name = T_Medic.Clinic_name
+GROUP BY T_Clinic.Clinic_name;
+
+-- TODO View using Group by and aggregate function
+
+--- Select query using EXISTS
 -- We want to see names of all medicine prescribed by certain doctor
 
 DROP VIEW V_Prescribed_drugs;

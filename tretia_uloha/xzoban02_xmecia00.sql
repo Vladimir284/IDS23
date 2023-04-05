@@ -263,18 +263,12 @@ VALUES ('99922', '2', '9301049593', '2022-12-23', '2023-01-01');
 
 --- Select queries using JOIN two tables
 -- First, we want to see all Doctors on available on neurology
-DROP VIEW V_Neurology_doctors;
-
-CREATE VIEW V_Neurology_doctors AS
 SELECT *
 FROM T_Medic
          NATURAL LEFT JOIN T_Doctor
 WHERE Clinic_name = 'Neurologie';
 
 -- Now, we want to view all medical equipment available on neurology
-DROP VIEW V_Medical_equipment_on_neurology;
-
-CREATE VIEW V_Medical_equipment_on_neurology AS
 SELECT Clinic_name, Medical_equipment_ID, Equipment, Amount
 FROM T_Clinic
          NATURAL LEFT JOIN T_Medical_equipment
@@ -283,10 +277,6 @@ WHERE Clinic_name = 'Neurologie';
 --- Select queries using JOIN with three tables
 
 -- We want to view all medics who operated certain patient
-
-DROP VIEW V_Operation_patient_details;
-
-CREATE VIEW V_Operation_patient_details AS
 SELECT T_Medic.Medic_ID,
        T_Medic.Medic_first_name,
        T_Medic.Medic_last_name,
@@ -305,17 +295,11 @@ WHERE T_Patient.Personal_ID = '100328001';
 --- Select queries using GROUP BY and aggregate functions
 
 -- We want to see amount of medic stuff on Neurological clinic
-DROP VIEW V_Neurological_stuff;
-
-CREATE VIEW V_Neurological_stuff AS
 SELECT COUNT(T_Medic.Medic_ID) AS "Number of medics", T_Medic.Clinic_name
 FROM T_Medic
 GROUP BY T_Medic.Clinic_name;
 
 -- Which medic had the least operations
-DROP VIEW V_Operations_count;
-
-CREATE VIEW V_Operations_count AS
 SELECT T_Medic.Medic_ID,
        COUNT(T_Surgery_participants.Surgery_ID) AS "Amount of surgeries"
 FROM T_Surgery_participants
@@ -327,9 +311,6 @@ ORDER BY "Amount of surgeries";
 --- Select query using EXISTS
 -- We want to see names of all medicine prescribed by certain doctor
 
-DROP VIEW V_Prescribed_drugs;
-
-CREATE VIEW V_Prescribed_drugs AS
 SELECT T_Medic.Medic_first_name,
        T_Medic.Medic_last_name,
        T_Prescribed_Drug.Prescription_date,
@@ -347,9 +328,6 @@ WHERE EXISTS(
 --- Select queries using IN
 -- Now we want to see only who prescribed diazepam or insulin
 
-DROP VIEW V_Prescribed_insulin_diazepam;
-
-CREATE VIEW V_Prescribed_insulin_diazepam AS
 SELECT T_Medic.Medic_first_name,
        T_Medic.Medic_last_name,
        T_Prescribed_Drug.Prescription_date,

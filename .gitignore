@@ -14,3 +14,6 @@ prva_uloha/out
 *.out
 *.lot
 
+#Strvrta uloha
+strvrta_uloha/out
+stvrta_uloha/tutorial

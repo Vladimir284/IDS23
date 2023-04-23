@@ -1,0 +1,96 @@
+%! Author = vladimir
+%! Date = 23/04/2023
+
+% Preamble
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[slovak]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{float}
+\usepackage{lmodern}
+\usepackage[none]{hyphenat}
+\usepackage[left=2cm, text={17cm, 24cm}, top=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{wasysym}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{newpxtext}
+\usepackage{longtable,ltcaption}
+\usepackage{textgreek}
+\usepackage{multirow}
+\usepackage{outlines}
+
+% \comment{}
+\newcommand{\comment}[1]{}
+
+
+
+% Document
+\begin{document}
+
+    % TITULNI STRANA
+    \pagestyle{empty}
+    \begin{titlepage}
+        \begin{center}
+            \normalsize{Vysoké učení technické v Brně\linebreak}
+            \normalsize{Fakulta informačních technologií}
+
+            \vfill
+
+            \large\textbf{Databáze\linebreak}
+            \large\textbf{2022/2023}
+
+            \vfill
+
+            \LARGE\textbf{Dokumentácia k projektu predmetu IDS\linebreak}
+            \LARGE\textbf{Nemocnica\linebreak}
+            \large\textbf{Tým xzoban02}
+
+            \vfill
+            \vfill
+            \vfill
+
+
+            \begin{flushleft}
+                \large
+                Radek Zobaník (xzoban02)\\
+                Vladimír Mečiar (xmecia00)
+                \hfill
+                Brno, \today
+            \end{flushleft}
+        \end{center}
+    \end{titlepage}
+    \pagestyle{plain}
+    \newpage
+
+    % OBSAH - SEKCE
+    \tableofcontents
+
+    % OBSAH - OBRAZKY, TABULKY
+    \listoffigures
+    \listoftables
+
+    % CONTENT
+    \input{src/modules/generalization}
+    \input{src/modules/intro}
+    \input{src/modules/trigger}
+    \input{src/modules/procedure}
+    \input{src/modules/index}
+    \input{src/modules/explain_plan}
+    \input{src/modules/acces_rights}
+    \input{src/modules/view}
+    \input{src/modules/select}
+    \input{src/modules/outro}
+
+\end{document}

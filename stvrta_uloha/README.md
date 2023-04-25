@@ -1,7 +1,4 @@
-# Prvá úloha
-Prvá úloha spočívala v tvorbe ERD a use-case grafov, spolu so stručným popisom v dokumentácii.
-Dokumentácia je popísaná v súbore prva_uloha,doc a main.tex + moduly
-
+# Štvrtá úloha
 ## Zadanie:
 
 ### 4. část - SQL skript pro vytvoření pokročilých objektů schématu databáze

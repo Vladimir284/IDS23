@@ -261,102 +261,20 @@ VALUES ('99921', '6', '9502146005', '2022-03-01', '2022-03-09');
 INSERT INTO T_Hospitalization
 VALUES ('99922', '2', '9301049593', '2022-12-23', '2023-01-01');
 
----- Select queries, all queries will create view so we can see the result
+--- CREATE TRIGGERS
 
---- Select queries using JOIN two tables
--- First, we want to see all Doctors on available on neurology
-SELECT *
-FROM T_Medic
-         NATURAL LEFT JOIN T_Doctor
-WHERE Clinic_name = 'Neurologie';
-
--- Now, we want to view all medical equipment available on neurology
-SELECT Clinic_name, Medical_equipment_ID, Equipment, Amount
-FROM T_Clinic
-         NATURAL LEFT JOIN T_Medical_equipment
-WHERE Clinic_name = 'Neurologie';
-
---- Select queries using JOIN with three tables
-
--- We want to view all medics who operated certain patient
-SELECT T_Medic.Medic_ID,
-       T_Medic.Medic_first_name,
-       T_Medic.Medic_last_name,
-       T_Surgery.Surgery_ID,
-       Surgery_date,
-       Surgery_Time,
-       T_Patient.Patient_first_name,
-       T_Patient.Patient_last_name
-FROM T_Surgery
-         LEFT JOIN T_Surgery_participants ON T_Surgery.Surgery_ID = T_Surgery_participants.Surgery_ID
-         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Surgery_participants.Medic_ID
-         LEFT JOIN T_Patient ON T_Patient.Personal_ID = T_Surgery.Personal_ID
-WHERE T_Patient.Personal_ID = '100328001';
-
-
---- Select queries using GROUP BY and aggregate functions
-
--- We want to see amount of medic stuff on Neurological clinic
-SELECT COUNT(T_Medic.Medic_ID) AS "Number of medics", T_Medic.Clinic_name
-FROM T_Medic
-GROUP BY T_Medic.Clinic_name;
-
--- Which medic had the least operations
-SELECT T_Medic.Medic_ID,
-       COUNT(T_Surgery_participants.Surgery_ID) AS "Amount of surgeries"
-FROM T_Surgery_participants
-         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Surgery_participants.Medic_ID
-GROUP BY T_Medic.Medic_ID
-ORDER BY "Amount of surgeries";
-
--- How many
---- Select query using EXISTS
--- We want to see names of all medicine prescribed by certain doctor
-
-SELECT T_Medic.Medic_first_name,
-       T_Medic.Medic_last_name,
-       T_Prescribed_Drug.Prescription_date,
-       T_Prescribed_Drug.Cure
-FROM T_Doctor
-         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
-         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
-WHERE EXISTS(
-        SELECT Cure
-        FROM T_Doctor
-                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
-    )
-  AND Cure IS NOT NULL;
-
---- Select queries using IN
--- Now we want to see only who prescribed diazepam or insulin
-
-SELECT T_Medic.Medic_first_name,
-       T_Medic.Medic_last_name,
-       T_Prescribed_Drug.Prescription_date,
-       T_Prescribed_Drug.Cure
-FROM T_Doctor
-         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
-         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
-WHERE EXISTS(
-        SELECT Cure
-        FROM T_Doctor
-                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
-    )
-  AND Cure IS NOT NULL
-  AND Cure IN ('diazepam', 'inzulin');
-
-
+-- Check date trigger
 CREATE OR REPLACE TRIGGER check_date
     BEFORE UPDATE OR INSERT ON T_Hospitalization
     FOR EACH ROW
 DECLARE current_date  VARCHAR(10);
 BEGIN
-    current_date :=  TO_CHAR(SYSDATE, 'YYYY-MM-DD');
+current_date :=  TO_CHAR(SYSDATE, 'YYYY-MM-DD');
     if :NEW.Date_from < current_date THEN
         :NEW.Date_from := current_date;
-    else
+else
         :NEW.Date_from := :NEW.Date_from;
-    end if;
+end if;
 END;
 /
 
@@ -365,29 +283,32 @@ VALUES ('', '2', '9301049593', '2021-12-23', '2023-01-01');
 INSERT INTO T_Hospitalization
 VALUES ('', '2', '9301049593', '2024-12-23', '2023-01-01');
 
+--- END TRIGGERS
+
+--- CREATE PROCEDURES
 CREATE OR REPLACE PROCEDURE ITEM_USED
     (item_name IN VARCHAR)
 AS
     CURSOR Items IS SELECT Equipment, Amount FROM T_Medical_equipment;
-    name T_Medical_equipment.Equipment%type;
+name T_Medical_equipment.Equipment%type;
     amount_of_items T_Medical_equipment.Amount%type;
-    count T_Medical_equipment.Amount%type := 0;
+count T_Medical_equipment.Amount%type := 0;
 
 
 BEGIN
-    OPEN Items;
-    LOOP
-        FETCH Items INTO name,amount_of_items;
+OPEN Items;
+LOOP
+FETCH Items INTO name,amount_of_items;
         EXIT WHEN Items%NOTFOUND;
         IF name = item_name THEN
             count := count + amount_of_items;
-        END IF;
-    END LOOP;
-    CLOSE Items;
-    DBMS_OUTPUT.put_line('Počet položek ' || item_name || ' je ' || count);
+END IF;
+END LOOP;
+CLOSE Items;
+DBMS_OUTPUT.put_line('Počet položek ' || item_name || ' je ' || count);
 
 END;
 /
 /*BEGIN ITEM_USED('Postel'); END;*/
-
+--- END PROCEDURES
 COMMIT;

@@ -316,17 +316,17 @@ VALUES (779, '9', '100328001', '2023-04-27', '08:58', 'Placebo');
 --- CREATE PROCEDURES
 
 -- Used items in whole hospital procedure
-CREATE OR REPLACE PROCEDURE ITEM_USED
-    (item_name IN VARCHAR)
+CREATE OR REPLACE PROCEDURE ITEM_USED(item_name IN VARCHAR)
 AS
-    name T_Medical_equipment.Equipment%type;
+    name            T_Medical_equipment.Equipment%type;
     amount_of_items T_Medical_equipment.Amount%type;
-    "count" NUMBER;
-    name_to_find T_Medical_equipment.Equipment%type;
-    CURSOR Items IS SELECT Equipment, Amount FROM T_Medical_equipment;
+    "count"         NUMBER;
+    name_to_find    T_Medical_equipment.Equipment%type;
+    CURSOR Items IS SELECT Equipment, Amount
+                    FROM T_Medical_equipment;
 BEGIN
     "count" := 0;
-    name_to_find  := item_name;
+    name_to_find := item_name;
     OPEN Items;
     LOOP
         FETCH Items INTO name,amount_of_items;
@@ -336,15 +336,18 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE Items;
-    DBMS_OUTPUT.put_line('Počet položek ' || name_to_find || ' je '|| "count");
-    EXCEPTION WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.put_line('Počet položek ' || name_to_find || ' je ' || "count");
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
         BEGIN
             DBMS_OUTPUT.put_line('Položka' || name_to_find || 'nenalezena.');
         END;
 
 END;
 /
-BEGIN ITEM_USED('Postel'); END;
+BEGIN
+    ITEM_USED('Postel');
+END;
 --- END PROCEDURES
 
 
@@ -363,7 +366,8 @@ WHERE EXISTS(
     )
   AND Cure IS NOT NULL
   AND Cure IN ('diazepam', 'inzulin');
-SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+SELECT *
+FROM TABLE (DBMS_XPLAN.DISPLAY);
 
 
 CREATE INDEX drugs ON T_Prescribed_Drug (Cure);
@@ -383,17 +387,19 @@ WHERE EXISTS(
     )
   AND Cure IS NOT NULL
   AND Cure IN ('diazepam', 'inzulin');
-SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+SELECT *
+FROM TABLE (DBMS_XPLAN.DISPLAY);
 
 /
-BEGIN ITEM_USED('Postel'); END;
+BEGIN
+    ITEM_USED('Postel');
+END;
 
 DROP VIEW errors;
 CREATE VIEW errors AS
 SELECT *
 FROM user_errors
-WHERE
-  name = 'ITEM_USED'; -- Nazov erroru
+WHERE name = 'ITEM_USED'; -- Nazov erroru
 
 CREATE OR REPLACE PROCEDURE GET_PATIENT_OPERATIONS(patients_id in VARCHAR)
 AS
@@ -442,6 +448,53 @@ GRANT SELECT ON T_Surgery_participants TO XMECIA00;
 
 --- END GRANT ACCES
 
+--- CREATE MATERIALISED VIEW
+DROP MATERIALIZED VIEW V_Operation_patient_details;
+
+CREATE MATERIALIZED VIEW V_Operation_patient_details AS
+SELECT T_Medic.Medic_ID,
+       T_Medic.Medic_first_name,
+       T_Medic.Medic_last_name,
+       T_Surgery.Surgery_ID,
+       Surgery_date,
+       Surgery_Time,
+       T_Patient.Patient_first_name,
+       T_Patient.Patient_last_name
+FROM T_Surgery
+         LEFT JOIN T_Surgery_participants ON T_Surgery.Surgery_ID = T_Surgery_participants.Surgery_ID
+         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Surgery_participants.Medic_ID
+         LEFT JOIN T_Patient ON T_Patient.Personal_ID = T_Surgery.Personal_ID
+WHERE T_Patient.Personal_ID = '100328001';
+
+GRANT SELECT ON V_Operation_patient_details TO XZOBAN02;
+
+--- END VIEW
+
+
+--- CREATE COMPLEX SELECT QUERY
+
+-- Na dokotora 1 lozko
+-- Na sestru 2 lozka
+
+-- Zisti kapacitu loziek
+-- Zisti pocet sestier a doktorov, v pripade ze mame menej alert, ked akurat upozornenie a ked viac tak ok
+
+DECLARE
+    capacity INTEGER;
+BEGIN
+    SELECT count(*)
+    INTO capacity
+    FROM T_Nurse
+    WHERE Medic_ID IS NOT NULL;
+    capacity := capacity * 2;
+    DBMS_OUTPUT.PUT_LINE(capacity);
+    SELECT count(*)
+    INTO capacity
+    FROM T_Doctor
+    WHERE Medic_ID IS NOT NULL;
+    DBMS_OUTPUT.PUT_LINE(capacity);
+END;
+--- END
 COMMIT;
 
 -- Debug for view errors

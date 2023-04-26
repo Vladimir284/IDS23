@@ -338,15 +338,49 @@ BEGIN
     DBMS_OUTPUT.put_line('Počet položek ' || item_name || ' je ' || count);
 
 END;
+
 /
-/*BEGIN ITEM_USED('Postel'); END;*/
+BEGIN ITEM_USED('Postel'); END;
 
+DROP VIEW errors;
+CREATE VIEW errors AS
+SELECT *
+FROM user_errors
+WHERE
+  name = 'ITEM_USED'; -- Nazov erroru
 
---
+CREATE OR REPLACE PROCEDURE GET_PATIENT_OPERATIONS(patients_id in VARCHAR)
+AS
+    CURSOR Operations IS SELECT T_Patient.Patient_first_name,
+                                T_Patient.Patient_last_name,
+                                T_Surgery.Surgery_ID,
+                                T_Surgery.Surgery_date,
+                                T_Surgery.Surgery_Time
+                         FROM T_Patient
+                                  JOIN T_Surgery ON T_Patient.Personal_ID = T_Surgery.Personal_ID
+                         WHERE T_Surgery.Personal_ID = patients_id;
+    r_row Operations%ROWTYPE;
+BEGIN
+    OPEN Operations;
+    LOOP
+        FETCH Operations INTO r_row;
+        EXIT WHEN Operations%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(r_row.Patient_first_name || ' ' || r_row.Patient_last_name || ' ' || r_row.Surgery_ID ||
+                             r_row.Surgery_date || ' ' || r_row.Surgery_Time);
+    END LOOP;
+    CLOSE Operations;
+END GET_PATIENT_OPERATIONS;
+
+INSERT INTO T_Surgery
+VALUES ('4', '100328001', '2022-04-28', '10:00', '15');
+
+BEGIN
+    GET_PATIENT_OPERATIONS('100328001');
+END;
+
 --- END PROCEDURES
 
 --- GRANT ACCES
-
 GRANT SELECT ON T_Clinic TO XMECIA00;
 GRANT SELECT ON T_Doctor TO XMECIA00;
 GRANT SELECT ON T_Examination TO XMECIA00;

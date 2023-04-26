@@ -1,5 +1,17 @@
 \subsection{Triggery}
 
-\title{Kontrola korektneho datumu hospitalizacie}
+\subsubsection{Kontrola korektného dátumu hospitalizácie}
 
-\title{Odstranenie zamestnanca}
+\subsubsection{Kontrola predpisu lieku}
+
+Nakoľko lieky smie predpisovať iba doktor,
+do databáze bol pridaný TRIGGER na túto kontrolu.
+Ak sa liek pokúsi predpísať zamestnane nemocnice,
+ktorý nie je doktorom, TRIGGER vyvolá error
+
+\begin{lstlisting}[label={lst:oracle_console_error}]
+    error occurred during batching: ORA-20000: Zaměstnanec není oprávňen předepisovat léky
+\end{lstlisting}
+
+V celom preklade skriptu sa vyskytne jediný error a to práve v prípade demonštrácie, keď budeme chieť zapísať do databáze
+liek predpísaný sestrou.

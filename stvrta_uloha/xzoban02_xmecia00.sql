@@ -316,28 +316,74 @@ VALUES (779, '9', '100328001', '2023-04-27', '08:58', 'Placebo');
 --- CREATE PROCEDURES
 
 -- Used items in whole hospital procedure
-CREATE OR REPLACE PROCEDURE ITEM_USED(item_name IN VARCHAR)
+CREATE OR REPLACE PROCEDURE ITEM_USED
+    (item_name IN VARCHAR)
 AS
-    CURSOR Items IS SELECT Equipment, Amount
-                    FROM T_Medical_equipment;
-    name            T_Medical_equipment.Equipment%type;
+    name T_Medical_equipment.Equipment%type;
     amount_of_items T_Medical_equipment.Amount%type;
-    count           T_Medical_equipment.Amount%type := 0;
-
-
+    "count" NUMBER;
+    name_to_find T_Medical_equipment.Equipment%type;
+    CURSOR Items IS SELECT Equipment, Amount FROM T_Medical_equipment;
 BEGIN
+    "count" := 0;
+    name_to_find  := item_name;
     OPEN Items;
     LOOP
         FETCH Items INTO name,amount_of_items;
         EXIT WHEN Items%NOTFOUND;
         IF name = item_name THEN
-            count := count + amount_of_items;
+            "count" := "count" + amount_of_items;
         END IF;
     END LOOP;
     CLOSE Items;
-    DBMS_OUTPUT.put_line('Počet položek ' || item_name || ' je ' || count);
+    DBMS_OUTPUT.put_line('Počet položek ' || name_to_find || ' je '|| "count");
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+        BEGIN
+            DBMS_OUTPUT.put_line('Položka' || name_to_find || 'nenalezena.');
+        END;
 
 END;
+/
+BEGIN ITEM_USED('Postel'); END;
+--- END PROCEDURES
+
+
+EXPLAIN PLAN FOR
+SELECT T_Medic.Medic_first_name,
+       T_Medic.Medic_last_name,
+       T_Prescribed_Drug.Prescription_date,
+       T_Prescribed_Drug.Cure
+FROM T_Doctor
+         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
+         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
+WHERE EXISTS(
+        SELECT Cure
+        FROM T_Doctor
+                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
+    )
+  AND Cure IS NOT NULL
+  AND Cure IN ('diazepam', 'inzulin');
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+
+CREATE INDEX drugs ON T_Prescribed_Drug (Cure);
+
+EXPLAIN PLAN FOR
+SELECT T_Medic.Medic_first_name,
+       T_Medic.Medic_last_name,
+       T_Prescribed_Drug.Prescription_date,
+       T_Prescribed_Drug.Cure
+FROM T_Doctor
+         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
+         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
+WHERE EXISTS(
+        SELECT Cure
+        FROM T_Doctor
+                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
+    )
+  AND Cure IS NOT NULL
+  AND Cure IN ('diazepam', 'inzulin');
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
 /
 BEGIN ITEM_USED('Postel'); END;

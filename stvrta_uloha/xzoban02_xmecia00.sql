@@ -265,16 +265,18 @@ VALUES ('99922', '2', '9301049593', '2022-12-23', '2023-01-01');
 
 -- Check date trigger
 CREATE OR REPLACE TRIGGER check_date
-    BEFORE UPDATE OR INSERT ON T_Hospitalization
+    BEFORE UPDATE OR INSERT
+    ON T_Hospitalization
     FOR EACH ROW
-DECLARE current_date  VARCHAR(10);
+DECLARE
+    current_date VARCHAR(10);
 BEGIN
-current_date :=  TO_CHAR(SYSDATE, 'YYYY-MM-DD');
+    current_date := TO_CHAR(SYSDATE, 'YYYY-MM-DD');
     if :NEW.Date_from < current_date THEN
         :NEW.Date_from := current_date;
-else
+    else
         :NEW.Date_from := :NEW.Date_from;
-end if;
+    end if;
 END;
 /
 
@@ -283,29 +285,73 @@ VALUES ('', '2', '9301049593', '2021-12-23', '2023-01-01');
 INSERT INTO T_Hospitalization
 VALUES ('', '2', '9301049593', '2024-12-23', '2023-01-01');
 
+-- Check presribed drug trigger
+CREATE OR REPLACE TRIGGER check_prescribed_drug
+    BEFORE INSERT
+    ON T_Prescribed_Drug
+    FOR EACH ROW
+DECLARE
+    prescribtor_id INTEGER;
+BEGIN
+--     prescribtor_id := :NEW.Medic_ID;
+--     DBMS_OUTPUT.PUT_LINE(prescribtor_id);
+    -- Do not understand what is wrong
+--     SELECT CASE
+--                WHEN exists(SELECT 1
+--                            FROM T_Doctor
+--                            WHERE T_Doctor.Medic_ID = prescribtor_id)
+--                    THEN NULL
+--                ELSE raise_application_error(20000, 'Zaměstnanec není oprávňen předepisovat léky')
+--                END AS rec_exists
+--     from dual;
+        select null into prescribtor_id
+    from T_Doctor
+    where T_Doctor.Medic_ID = :NEW.Medic_ID
+    and rownum = 1;
+
+exception
+    when no_data_found then
+        -- do things here when record doesn't exists
+        raise_application_error(-20000,'Zaměstnanec není oprávňen předepisovat léky');
+END;
+
+-- Debug for view errors
+DROP VIEW errors;
+CREATE VIEW errors AS
+SELECT *
+FROM user_errors
+WHERE type = 'TRIGGER' -- Podla typu errorru
+  and name = 'CHECK_PRESCRIBED_DRUG'; -- Nazov erroru
+
+INSERT INTO T_Prescribed_Drug
+VALUES (778,'3','100328001','2023-04-26','08:58','Paracetamol');
+INSERT INTO T_Prescribed_Drug
+VALUES (779,'9','100328001','2023-04-27','08:58','Placebo');
+
+
 --- END TRIGGERS
 
 --- CREATE PROCEDURES
-CREATE OR REPLACE PROCEDURE ITEM_USED
-    (item_name IN VARCHAR)
+CREATE OR REPLACE PROCEDURE ITEM_USED(item_name IN VARCHAR)
 AS
-    CURSOR Items IS SELECT Equipment, Amount FROM T_Medical_equipment;
-name T_Medical_equipment.Equipment%type;
+    CURSOR Items IS SELECT Equipment, Amount
+                    FROM T_Medical_equipment;
+    name            T_Medical_equipment.Equipment%type;
     amount_of_items T_Medical_equipment.Amount%type;
-count T_Medical_equipment.Amount%type := 0;
+    count           T_Medical_equipment.Amount%type := 0;
 
 
 BEGIN
-OPEN Items;
-LOOP
-FETCH Items INTO name,amount_of_items;
+    OPEN Items;
+    LOOP
+        FETCH Items INTO name,amount_of_items;
         EXIT WHEN Items%NOTFOUND;
         IF name = item_name THEN
             count := count + amount_of_items;
-END IF;
-END LOOP;
-CLOSE Items;
-DBMS_OUTPUT.put_line('Počet položek ' || item_name || ' je ' || count);
+        END IF;
+    END LOOP;
+    CLOSE Items;
+    DBMS_OUTPUT.put_line('Počet položek ' || item_name || ' je ' || count);
 
 END;
 /

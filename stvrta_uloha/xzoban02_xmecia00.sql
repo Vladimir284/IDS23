@@ -293,45 +293,29 @@ CREATE OR REPLACE TRIGGER check_prescribed_drug
 DECLARE
     prescribtor_id INTEGER;
 BEGIN
---     prescribtor_id := :NEW.Medic_ID;
---     DBMS_OUTPUT.PUT_LINE(prescribtor_id);
-    -- Do not understand what is wrong
---     SELECT CASE
---                WHEN exists(SELECT 1
---                            FROM T_Doctor
---                            WHERE T_Doctor.Medic_ID = prescribtor_id)
---                    THEN NULL
---                ELSE raise_application_error(20000, 'Zaměstnanec není oprávňen předepisovat léky')
---                END AS rec_exists
---     from dual;
-        select null into prescribtor_id
+    select null
+    into prescribtor_id
     from T_Doctor
     where T_Doctor.Medic_ID = :NEW.Medic_ID
-    and rownum = 1;
+      and rownum = 1;
 
 exception
     when no_data_found then
         -- do things here when record doesn't exists
-        raise_application_error(-20000,'Zaměstnanec není oprávňen předepisovat léky');
+        raise_application_error(-20000, 'Zaměstnanec není oprávňen předepisovat léky');
 END;
 
--- Debug for view errors
-DROP VIEW errors;
-CREATE VIEW errors AS
-SELECT *
-FROM user_errors
-WHERE type = 'TRIGGER' -- Podla typu errorru
-  and name = 'CHECK_PRESCRIBED_DRUG'; -- Nazov erroru
-
 INSERT INTO T_Prescribed_Drug
-VALUES (778,'3','100328001','2023-04-26','08:58','Paracetamol');
+VALUES (778, '3', '100328001', '2023-04-26', '08:58', 'Paracetamol');
 INSERT INTO T_Prescribed_Drug
-VALUES (779,'9','100328001','2023-04-27','08:58','Placebo');
+VALUES (779, '9', '100328001', '2023-04-27', '08:58', 'Placebo');
 
 
 --- END TRIGGERS
 
 --- CREATE PROCEDURES
+
+-- Used items in whole hospital procedure
 CREATE OR REPLACE PROCEDURE ITEM_USED(item_name IN VARCHAR)
 AS
     CURSOR Items IS SELECT Equipment, Amount
@@ -356,5 +340,34 @@ BEGIN
 END;
 /
 /*BEGIN ITEM_USED('Postel'); END;*/
+
+
+--
 --- END PROCEDURES
+
+--- GRANT ACCES
+
+GRANT SELECT ON T_Clinic TO XMECIA00;
+GRANT SELECT ON T_Doctor TO XMECIA00;
+GRANT SELECT ON T_Examination TO XMECIA00;
+GRANT SELECT ON T_Hospitalization TO XMECIA00;
+GRANT SELECT ON T_Location TO XMECIA00;
+GRANT SELECT ON T_Medic TO XMECIA00;
+GRANT SELECT ON T_Medical_equipment TO XMECIA00;
+GRANT SELECT ON T_Nurse TO XMECIA00;
+GRANT SELECT ON T_Patient TO XMECIA00;
+GRANT SELECT ON T_Prescribed_Drug TO XMECIA00;
+GRANT SELECT ON T_Surgery TO XMECIA00;
+GRANT SELECT ON T_Surgery_participants TO XMECIA00;
+
+--- END GRANT ACCES
+
 COMMIT;
+
+-- Debug for view errors
+-- DROP VIEW errors;
+-- CREATE VIEW errors AS
+-- SELECT *
+-- FROM user_errors
+-- WHERE type = 'TRIGGER' -- Podla typu errorru
+--   and name = 'CHECK_PRESCRIBED_DRUG'; -- Nazov erroru

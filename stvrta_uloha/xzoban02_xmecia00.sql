@@ -351,42 +351,34 @@ END;
 --- END PROCEDURES
 
 
+DROP INDEX person;
 EXPLAIN PLAN FOR
-SELECT T_Medic.Medic_first_name,
-       T_Medic.Medic_last_name,
-       T_Prescribed_Drug.Prescription_date,
-       T_Prescribed_Drug.Cure
-FROM T_Doctor
-         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
-         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
-WHERE EXISTS(
-        SELECT Cure
-        FROM T_Doctor
-                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
-    )
-  AND Cure IS NOT NULL
-  AND Cure IN ('diazepam', 'inzulin');
+SELECT T_Patient.Personal_ID,
+       COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
+FROM T_Patient
+         LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
+    WHERE NOT EXISTS(
+            SELECT *
+            FROM T_Nurse WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
+        )
+GROUP BY T_Patient.Personal_ID
+ORDER BY "Amount of examinations";
 SELECT *
 FROM TABLE (DBMS_XPLAN.DISPLAY);
 
-
-CREATE INDEX drugs ON T_Prescribed_Drug (Cure);
+CREATE INDEX person ON T_Examination (Personal_ID);
 
 EXPLAIN PLAN FOR
-SELECT T_Medic.Medic_first_name,
-       T_Medic.Medic_last_name,
-       T_Prescribed_Drug.Prescription_date,
-       T_Prescribed_Drug.Cure
-FROM T_Doctor
-         LEFT JOIN T_Medic ON T_Medic.Medic_ID = T_Doctor.Medic_ID
-         LEFT JOIN T_Prescribed_Drug ON T_Medic.Medic_ID = T_Prescribed_Drug.Medic_ID
-WHERE EXISTS(
-        SELECT Cure
-        FROM T_Doctor
-                 LEFT JOIN T_Prescribed_Drug ON T_Doctor.Medic_ID = T_Prescribed_Drug.Medic_ID
-    )
-  AND Cure IS NOT NULL
-  AND Cure IN ('diazepam', 'inzulin');
+SELECT T_Patient.Personal_ID,
+       COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
+FROM T_Patient
+         LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
+    WHERE NOT EXISTS(
+            SELECT *
+            FROM T_Nurse WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
+        )
+GROUP BY T_Patient.Personal_ID
+ORDER BY "Amount of examinations";
 SELECT *
 FROM TABLE (DBMS_XPLAN.DISPLAY);
 

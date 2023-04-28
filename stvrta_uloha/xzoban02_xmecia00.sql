@@ -473,100 +473,43 @@ GRANT SELECT ON V_Operation_patient_details TO XZOBAN02;
 
 --- CREATE COMPLEX SELECT QUERY
 
--- Na dokotora 1 lozko
--- Na sestru 2 lozka
+SELECT T_CLINIC.CLINIC_NAME,
+       CASE
+           WHEN AMOUNT < (SELECT count(*)
+                          FROM T_Nurse
+                                   JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
+                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                          WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name) * 2 + (SELECT count(*)
+                                                                        FROM T_Doctor
+                                                                                 JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                 JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                                                                        WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
+               THEN 'CHYBA:   nedostatečná kapacita lůžek'
+           WHEN AMOUNT = (SELECT count(*)
+                          FROM T_Nurse
+                                   JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
+                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                          WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name) * 2 + (SELECT count(*)
+                                                                        FROM T_Doctor
+                                                                                 JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                 JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                                                                        WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
+               THEN 'Varování:žádná další rezerva lůžek'
+           WHEN AMOUNT > (SELECT count(*)
+                          FROM T_Nurse
+                                   JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
+                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                          WHERE T_Clinic.Clinic_name = 'Dětské') * 2 + (SELECT count(*)
+                                                                        FROM T_Doctor
+                                                                                 JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                 JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                                                                        WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
+               THEN 'OK:      Dostatečná rezerva lůžek'
+           END AS STATE
+FROM T_CLINIC
+         RIGHT JOIN T_MEDICAL_EQUIPMENT ON (T_CLINIC.CLINIC_NAME = T_MEDICAL_EQUIPMENT.CLINIC_NAME)
+WHERE EQUIPMENT = 'Postel';
 
--- Zisti kapacitu loziek
--- Zisti pocet sestier a doktorov, v pripade ze mame menej alert, ked akurat upozornenie a ked viac tak ok
-
--- TODO Finish
-DECLARE
-    count_nurses INTEGER;
-    count_doctor INTEGER;
-    capacity     INTEGER;
-    our_capacity INTEGER;
-    "status"       VARCHAR(100);
-BEGIN
-SELECT Clinic_name, "status" =
-                    CASE Clinic_name
-                        WHEN 'Dětské'
-                        THEN SELECT count(*)
-                            INTO count_nurses
-                            FROM T_Nurse JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
-                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                            WHERE T_Clinic.Clinic_name = 'Dětské';
-                            capacity := count_nurses * 2;
-                            SELECT count(*)
-                            INTO count_doctor
-                            FROM T_Doctor JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                            WHERE T_Clinic.Clinic_name = 'Dětské';
-                            capacity := capacity + count_doctor;
-                            SELECT T_MEDICAL_EQUIPMENT.Amount
-                            INTO our_capacity
-                            FROM T_MEDICAL_EQUIPMENT
-                            WHERE Equipment = 'Postel' AND Clinic_name = 'Dětské';
-                            CASE
-                                WHEN our_capacity < capacity
-                                    THEN "status":= 'CHYBA:   nedostatečná kapacita lůžek';
-                                WHEN our_capacity = capacity
-                                    THEN "status":='Varování:žádná další rezerva lůžek';
-                                WHEN our_capacity > capacity
-                                    THEN "status":='OK:      Dostatečná rezerva lůžek';
-                            END CASE;
-                        WHEN 'Ambulance'
-                            THEN SELECT count(*)
-                            INTO count_nurses
-                            FROM T_Nurse JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
-                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                            WHERE T_Clinic.Clinic_name = 'Ambulance';
-                            capacity := count_nurses * 2;
-                            SELECT count(*)
-                            INTO count_doctor
-                            FROM T_Doctor JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                            WHERE T_Clinic.Clinic_name = 'Ambulance';
-                            capacity := capacity + count_doctor;
-                            SELECT T_MEDICAL_EQUIPMENT.Amount
-                            INTO our_capacity
-                            FROM T_MEDICAL_EQUIPMENT
-                            WHERE Equipment = 'Postel' AND Clinic_name = 'Ambulance';
-                            CASE
-                                WHEN our_capacity < capacity
-                                    THEN "status":= 'CHYBA:   nedostatečná kapacita lůžek';
-                                WHEN our_capacity = capacity
-                                    THEN "status":='Varování:žádná další rezerva lůžek';
-                                WHEN our_capacity > capacity
-                                    THEN "status":='OK:      Dostatečná rezerva lůžek';
-                            END CASE;
-                        WHEN 'Neurologie'
-                            THEN THEN SELECT count(*)
-                            INTO count_nurses
-                            FROM T_Nurse JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
-                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                            WHERE T_Clinic.Clinic_name = 'Neurologie';
-                            capacity := count_nurses * 2;
-                            SELECT count(*)
-                            INTO count_doctor
-                            FROM T_Doctor JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                            WHERE T_Clinic.Clinic_name = 'Neurologie';
-                            capacity := capacity + count_doctor;
-                            SELECT T_MEDICAL_EQUIPMENT.Amount
-                            INTO our_capacity
-                            FROM T_MEDICAL_EQUIPMENT
-                            WHERE Equipment = 'Postel' AND Clinic_name = 'Neurologie';
-                            CASE
-                                WHEN our_capacity < capacity
-                                    THEN "status":= 'CHYBA:   nedostatečná kapacita lůžek';
-                                WHEN our_capacity = capacity
-                                    THEN "status":='Varování:žádná další rezerva lůžek';
-                                WHEN our_capacity > capacity
-                                    THEN "status":='OK:      Dostatečná rezerva lůžek';
-                            END CASE;
-                    END CASE;
-    FROM T_Clinic;
-END;
 --- END
 COMMIT;
 

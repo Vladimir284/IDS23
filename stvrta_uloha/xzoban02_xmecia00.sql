@@ -515,11 +515,3 @@ WHERE EQUIPMENT = 'Postel';
 
 --- END
 COMMIT;
-
--- Debug for view errors
--- DROP VIEW errors;
--- CREATE VIEW errors AS
--- SELECT *
--- FROM user_errors
--- WHERE type = 'TRIGGER' -- Podla typu errorru
---   and name = 'CHECK_PRESCRIBED_DRUG'; -- Nazov erroru

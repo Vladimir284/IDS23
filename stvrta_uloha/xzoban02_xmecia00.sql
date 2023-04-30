@@ -473,6 +473,21 @@ GRANT SELECT ON V_Operation_patient_details TO XZOBAN02;
 
 --- CREATE COMPLEX SELECT QUERY
 
+-- New clinic with insufficient capacity
+
+INSERT INTO T_Clinic
+VALUES ('Gastroenterologie', 9876543210);
+INSERT INTO T_Location
+VALUES (143, 'Gastroenterologie', 'Pavilon A', 'A 336');
+INSERT INTO T_Medical_equipment
+VALUES (123, 'Gastroenterologie', 'Postel', 3);
+INSERT INTO T_Medic
+VALUES (10, 'Alan', 'Dvetl', 'Gastroenterologie', 'plný', 'extérní');
+INSERT INTO T_Medic
+VALUES (11, 'Michal', 'Dveran', 'Gastroenterologie', 'směny', 'všeobecný');
+INSERT INTO T_Medic
+VALUES (12, 'Radim', 'Kurchus', 'Gastroenterologie', 'plný', 'primář');
+
 SELECT T_CLINIC.CLINIC_NAME,
        CASE
            WHEN AMOUNT < (SELECT count(*)
@@ -480,20 +495,20 @@ SELECT T_CLINIC.CLINIC_NAME,
                                    JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
                                    JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
                           WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name) * 2 + (SELECT count(*)
-                                                                        FROM T_Doctor
-                                                                                 JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                                                                 JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                                                                        WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
+                                                                                   FROM T_Doctor
+                                                                                            JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                            JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                                                                                   WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
                THEN 'CHYBA:   nedostatečná kapacita lůžek'
            WHEN AMOUNT = (SELECT count(*)
                           FROM T_Nurse
                                    JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
                                    JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
                           WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name) * 2 + (SELECT count(*)
-                                                                        FROM T_Doctor
-                                                                                 JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                                                                 JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                                                                        WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
+                                                                                   FROM T_Doctor
+                                                                                            JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                            JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
+                                                                                   WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
                THEN 'Varování:žádná další rezerva lůžek'
            WHEN AMOUNT > (SELECT count(*)
                           FROM T_Nurse

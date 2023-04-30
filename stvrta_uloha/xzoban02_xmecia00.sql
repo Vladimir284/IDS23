@@ -350,17 +350,19 @@ BEGIN
 END;
 --- END PROCEDURES
 
-
+-- CREATE EXPLAIN PLAN
+-- CREATE INDEX
 DROP INDEX person;
 EXPLAIN PLAN FOR
 SELECT T_Patient.Personal_ID,
        COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
 FROM T_Patient
          LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
-    WHERE NOT EXISTS(
-            SELECT *
-            FROM T_Nurse WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
-        )
+WHERE NOT EXISTS(
+        SELECT *
+        FROM T_Nurse
+        WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
+    )
 GROUP BY T_Patient.Personal_ID
 ORDER BY "Amount of examinations";
 SELECT *
@@ -373,25 +375,21 @@ SELECT T_Patient.Personal_ID,
        COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
 FROM T_Patient
          LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
-    WHERE NOT EXISTS(
-            SELECT *
-            FROM T_Nurse WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
-        )
+WHERE NOT EXISTS(
+        SELECT *
+        FROM T_Nurse
+        WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
+    )
 GROUP BY T_Patient.Personal_ID
 ORDER BY "Amount of examinations";
 SELECT *
 FROM TABLE (DBMS_XPLAN.DISPLAY);
-
+-- END EXPLAIN PLAN
+-- END INDEX
 /
 BEGIN
     ITEM_USED('Postel');
 END;
-
-DROP VIEW errors;
-CREATE VIEW errors AS
-SELECT *
-FROM user_errors
-WHERE name = 'ITEM_USED'; -- Nazov erroru
 
 CREATE OR REPLACE PROCEDURE GET_PATIENT_OPERATIONS(patients_id in VARCHAR)
 AS
@@ -410,6 +408,7 @@ BEGIN
         FETCH Operations INTO r_row;
         EXIT WHEN Operations%NOTFOUND;
         DBMS_OUTPUT.PUT_LINE(r_row.Patient_first_name || ' ' || r_row.Patient_last_name || ' ' || r_row.Surgery_ID ||
+                             ' ' ||
                              r_row.Surgery_date || ' ' || r_row.Surgery_Time);
     END LOOP;
     CLOSE Operations;
@@ -417,6 +416,8 @@ END GET_PATIENT_OPERATIONS;
 
 INSERT INTO T_Surgery
 VALUES ('4', '100328001', '2022-04-28', '10:00', '15');
+INSERT INTO T_Surgery_participants
+VALUES ('1', '6');
 
 BEGIN
     GET_PATIENT_OPERATIONS('100328001');
@@ -480,38 +481,36 @@ VALUES (11, 'Michal', 'Dveran', 'Gastroenterologie', 'směny', 'všeobecný');
 INSERT INTO T_Medic
 VALUES (12, 'Radim', 'Kurchus', 'Gastroenterologie', 'plný', 'primář');
 
+-- Insertion of Clinic name with warning
+INSERT INTO T_Medical_equipment
+VALUES (178, 'Dětské', 'Postel', 13);
+
 SELECT T_CLINIC.CLINIC_NAME,
        CASE
            WHEN AMOUNT < (SELECT count(*)
                           FROM T_Nurse
                                    JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
-                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                          WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name) * 2 + (SELECT count(*)
-                                                                                   FROM T_Doctor
-                                                                                            JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                                                                            JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                                                                                   WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
-               THEN 'CHYBA:   nedostatečná kapacita lůžek'
+                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name) * 2 + (SELECT count(*)
+                                                                                                       FROM T_Doctor
+                                                                                                                JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name)
+               THEN 'CHYBA:     Nedostatečná kapacita lůžek'
            WHEN AMOUNT = (SELECT count(*)
                           FROM T_Nurse
                                    JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
-                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                          WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name) * 2 + (SELECT count(*)
-                                                                                   FROM T_Doctor
-                                                                                            JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                                                                            JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                                                                                   WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
-               THEN 'Varování:žádná další rezerva lůžek'
+                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name) * 2 + (SELECT count(*)
+                                                                                                       FROM T_Doctor
+                                                                                                                JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name)
+               THEN 'Varování:  Žádná další rezerva lůžek'
            WHEN AMOUNT > (SELECT count(*)
                           FROM T_Nurse
                                    JOIN T_Medic ON T_Nurse.Medic_ID = T_Medic.Medic_ID
-                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                          WHERE T_Clinic.Clinic_name = 'Dětské') * 2 + (SELECT count(*)
-                                                                        FROM T_Doctor
-                                                                                 JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
-                                                                                 JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name
-                                                                        WHERE T_Clinic.Clinic_name = T_Medic.Clinic_name)
-               THEN 'OK:      Dostatečná rezerva lůžek'
+                                   JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name) * 2 + (SELECT count(*)
+                                                                                                       FROM T_Doctor
+                                                                                                                JOIN T_Medic ON T_Doctor.Medic_ID = T_Medic.Medic_ID
+                                                                                                                JOIN T_Clinic ON T_Medic.Clinic_name = T_Clinic.Clinic_name)
+               THEN 'OK:        Dostatečná rezerva lůžek'
            END AS STATE
 FROM T_CLINIC
          RIGHT JOIN T_MEDICAL_EQUIPMENT ON (T_CLINIC.CLINIC_NAME = T_MEDICAL_EQUIPMENT.CLINIC_NAME)

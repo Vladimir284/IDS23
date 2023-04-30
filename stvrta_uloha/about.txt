@@ -1,0 +1,26 @@
+Poznamky pre obhajobu projektu IDS23
+
+	1. Trigger
+		- kontrola datumu
+
+		- kontrola predpisu lieku
+			- trigger kontroluje, ci liek predpisuje iba zamestnanec 
+	2. Procedura
+		- pouzite polozky
+
+		- ziskanie operacii pacienta
+			- ziskanie vsetkych operacii pacienta
+
+	3. Index
+
+	4. Explain plan
+
+	5. Pridelenie prav
+		- pre druheho clena boli pridelene prava na poziadavok SELECT nad vsetkymi tabulkami
+
+	6. Materializovany pohlad
+		- Materializovny pohlad bol vytvoreny nad vsetkymi informaciami o operacii pacienta Petra Novaka
+
+	7. Select poziadavok
+		- Urcenie dostatocneho poctu vsetkych lozok v nemocnici na klinike podla poctu zamestnancov v nemocnici
+	

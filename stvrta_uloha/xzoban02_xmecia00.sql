@@ -389,7 +389,7 @@ END;
 -- CREATE INDEX
 
 -- List doctors only, sorted by amount of examinations
-DROP INDEX person;
+
 EXPLAIN PLAN FOR
 SELECT T_Patient.Personal_ID,
        COUNT(T_Examination.Personal_ID) AS "Amount of examinations"

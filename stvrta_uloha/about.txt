@@ -2,18 +2,22 @@ Poznamky pre obhajobu projektu IDS23
 
 	1. Trigger
 		- kontrola datumu
+			-kontrola data u hospitalizace (pokud se zadá datum před dneškem, tak se automaticky opraví na dnešní)
 
 		- kontrola predpisu lieku
 			- trigger kontroluje, ci liek predpisuje iba zamestnanec 
 	2. Procedura
 		- pouzite polozky
+			-Vypíše počet dané položky v celé nemocnici
 
 		- ziskanie operacii pacienta
 			- ziskanie vsetkych operacii pacienta
 
 	3. Index
-
 	4. Explain plan
+		-Dotaz vypíše seznam prohlídek všech doktorů seřazeně
+		-Index na cizí klíč Presonal_ID v tabulce prohlídek, což urychlí tento dotaz (nemusí procházet celý sloupec)
+		-TODO
 
 	5. Pridelenie prav
 		- pre druheho clena boli pridelene prava na poziadavok SELECT nad vsetkymi tabulkami

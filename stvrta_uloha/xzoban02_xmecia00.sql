@@ -348,48 +348,6 @@ END;
 BEGIN
     ITEM_USED('Postel');
 END;
---- END PROCEDURES
-
--- CREATE EXPLAIN PLAN
--- CREATE INDEX
-DROP INDEX person;
-EXPLAIN PLAN FOR
-SELECT T_Patient.Personal_ID,
-       COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
-FROM T_Patient
-         LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
-WHERE NOT EXISTS(
-        SELECT *
-        FROM T_Nurse
-        WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
-    )
-GROUP BY T_Patient.Personal_ID
-ORDER BY "Amount of examinations";
-SELECT *
-FROM TABLE (DBMS_XPLAN.DISPLAY);
-
-CREATE INDEX person ON T_Examination (Personal_ID);
-
-EXPLAIN PLAN FOR
-SELECT T_Patient.Personal_ID,
-       COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
-FROM T_Patient
-         LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
-WHERE NOT EXISTS(
-        SELECT *
-        FROM T_Nurse
-        WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
-    )
-GROUP BY T_Patient.Personal_ID
-ORDER BY "Amount of examinations";
-SELECT *
-FROM TABLE (DBMS_XPLAN.DISPLAY);
--- END EXPLAIN PLAN
--- END INDEX
-/
-BEGIN
-    ITEM_USED('Postel');
-END;
 
 CREATE OR REPLACE PROCEDURE GET_PATIENT_OPERATIONS(patients_id in VARCHAR)
 AS
@@ -424,6 +382,45 @@ BEGIN
 END;
 
 --- END PROCEDURES
+
+-- CREATE EXPLAIN PLAN
+-- CREATE INDEX
+
+-- List doctors only, sorted by amount of examinations
+DROP INDEX person;
+EXPLAIN PLAN FOR
+SELECT T_Patient.Personal_ID,
+       COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
+FROM T_Patient
+         LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
+WHERE NOT EXISTS(
+        SELECT *
+        FROM T_Nurse
+        WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
+    )
+GROUP BY T_Patient.Personal_ID
+ORDER BY "Amount of examinations";
+SELECT *
+FROM TABLE (DBMS_XPLAN.DISPLAY);
+
+CREATE INDEX person ON T_Examination (Personal_ID);
+
+EXPLAIN PLAN FOR
+SELECT T_Patient.Personal_ID,
+       COUNT(T_Examination.Personal_ID) AS "Amount of examinations"
+FROM T_Patient
+         LEFT JOIN T_Examination ON T_Examination.Personal_ID = T_Patient.Personal_ID
+WHERE NOT EXISTS(
+        SELECT *
+        FROM T_Nurse
+        WHERE T_Examination.Medic_ID = T_Nurse.Medic_ID
+    )
+GROUP BY T_Patient.Personal_ID
+ORDER BY "Amount of examinations";
+SELECT *
+FROM TABLE (DBMS_XPLAN.DISPLAY);
+-- END EXPLAIN PLAN
+-- END INDEX
 
 --- GRANT ACCES
 GRANT SELECT ON T_Clinic TO XMECIA00;

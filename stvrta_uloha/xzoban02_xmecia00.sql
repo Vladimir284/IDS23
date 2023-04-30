@@ -285,6 +285,8 @@ VALUES ('', '2', '9301049593', '2021-12-23', '2023-01-01');
 INSERT INTO T_Hospitalization
 VALUES ('', '2', '9301049593', '2024-12-23', '2023-01-01');
 
+SELECT * FROM T_Hospitalization;
+
 -- Check presribed drug trigger
 CREATE OR REPLACE TRIGGER check_prescribed_drug
     BEFORE INSERT
